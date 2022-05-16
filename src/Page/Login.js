@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form'
 import axios from 'axios'
 import jwtDecode from 'jwt-decode'
 import { useDispatch } from 'react-redux'
-
+import {GoogleLogin} from 'react-google-login'
 import userSlice from '../store/user'
 
 const Login = () => {
@@ -41,9 +41,17 @@ const Login = () => {
         }).catch( err => {
             setLoginStatus({
                 succes: false,
-                message: 'Please input your correct password !'
+                message: 'Please input your correct password ! x`'
             })
         })
+    }
+
+    const googleSuccesLogin = (res) => {
+        console.log(res)
+    }
+
+    const googleFailLogin = (err) => {
+        console.log(err)
     }
 
   return (
@@ -67,6 +75,17 @@ const Login = () => {
                         </div>
                         <p>Don't have an accout? <Link to="/register" className="text-blue-600">Register Now</Link></p>
                     </form>
+                    <GoogleLogin
+                        clientId="116994697772-31kh332hjk3959qt3pcst5s52i5cj0gk.apps.googleusercontent.com"
+                        render={props => {
+                            return(
+                                <button onClick={props.onClick} disabled={props.disabled} className="bg-red-500 text-white px-8 py-3">Login with Google</button>
+                            )
+                        }}
+                        onSuccess={googleSuccesLogin}
+                        onFailure={googleFailLogin}
+                        cookiePolicy={'single_host_origin'}
+                    />
                 </div>
             </div>
         </section>
