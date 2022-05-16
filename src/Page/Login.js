@@ -1,19 +1,56 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
+import React, {useState} from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
+import axios from 'axios'
+import jwtDecode from 'jwt-decode'
+import { useDispatch } from 'react-redux'
+
+import userSlice from '../store/user'
 
 const Login = () => {
 
     const { register, handleSubmit, formState } = useForm()
+    const [ loginStatus, setLoginStatus ] = useState({
+        succes: false,
+        message: ''
+    })
+    const dispatch = useDispatch()
+    const navigate = useNavigate()
 
     const formSubmitHandler = (data) => {
         // proses login
+        const postData = {
+            email : data.user_email,
+            password: data.user_password,
+        }
+
+        axios.post('http://localhost:4000/login', postData)
+        .then(res => {
+            
+            if( typeof res.data.accessToken !== 'undifined' ){
+                //token disimpan di localstorage browser
+                localStorage.setItem('minishopAccessToken', res.data.accessToken)
+                //menyimpan user di reduz store
+                const user = jwtDecode(res.data.accessToken)
+                axios.get(`http://localhost:4000/users/${user.sub}`)
+                .then(res => {
+                    dispatch( userSlice.actions.addUser( {userData: res.data}) )
+                    navigate('/')
+                })
+            }
+        }).catch( err => {
+            setLoginStatus({
+                succes: false,
+                message: 'Please input your correct password !'
+            })
+        })
     }
 
   return (
     <section>
             <div className="container py-8">
                 <div className="max-w-[500px] mx-auto">
+                    {(!setLoginStatus.succes && loginStatus.message) && <p className='text-sm text-red-500 italic'>{loginStatus.message}</p>}
                     <form onSubmit={ handleSubmit(formSubmitHandler) }>
                         <div className="mb-4">
                             <label htmlFor="email">Email</label>
